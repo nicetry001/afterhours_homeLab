@@ -6,14 +6,16 @@
 
 ## 📋 Table of Contents
 
-- [Architecture Overview](#-architecture-overview)
+- [Architecture Overview](#️-architecture-overview)
 - [Infrastructure Layers](#-infrastructure-layers)
 - [Docker Services Reference](#-docker-services-reference)
 - [Network Topology](#-network-topology)
 - [Getting Started](#-getting-started)
-- [Secret Management](#️-secret-management)
+- [Secret Management](#-secret-management)
 - [Adding New Stacks](#-adding-new-stacks)
 - [Repository Structure](#-repository-structure)
+- [Security Notes](#️-security-notes)
+- [Tech Stack Summary](#️-tech-stack-summary)
 
 ---
 
@@ -25,7 +27,7 @@
 │                                                                            │
 │  ┌─────────────────┐             ┌──────────────────┐                      │
 │  │   Home Router   │────────────►│      vmbr0       │                      │
-│  │  192.168.1.1    │             │ (Public Bridge)  │                      │
+│  │  192.168.1.1    │             │  (192.168.1.169) │                      │
 │  └─────────────────┘             └────────┼─────────┘                      │
 │                                           │                                │
 │  ┌────────────────────────────────────────▼─────────────────────────────┐  │
@@ -299,26 +301,23 @@ This keeps media files off the Docker node's thin-provisioned disk.
         ┌────────────────────────────────────────┐
         │             192.168.1.0/24             │
         │                Home LAN                │
-        │           Gateway: 192.168.1.1         │
+        │          Gateway: 192.168.1.1          │
         └───────────────────┬────────────────────┘
                             │
-            ┌───────────────┼───────────────┐
-            │ vmbr0 Bridge  │               │
-    ┌───────▼───────┐       │       ┌───────▼───────┐
-    │  vm-docker01  │       │       │  lxc-pihole   │
-    │  192.168.1.170│       │       │  192.168.1.171│
-    │ (Docker Host) │       │       │  (DNS Server) │
-    └───────┬───────┘       │       └───────┬───────┘
-            │               │               │
-    ┌───────▼───────────────▼───────────────▼───────┐
-    │          10.6.7.0/24 (Proxmox SDN vnet0)      │
-    │                Gateway: 10.6.7.1              │
-    │                                               │
-    │  • .170 -> vm-docker01 (Compute Host)         │
-    │  • .171 -> lxc-pihole01 (DNS Filtering)       │
-    │  • .172 -> lxc-tailscale01 (Subnet Mesh)      │
-    │  • .173 -> vm-hermes01 (AI Dedicated Agent)   │
-    └───────────────────────────────────────────────┘
+   ┌────────────────────────▼────────────────────────┐
+   │    PROXMOX VE HYPERVISOR HOST (sproxmox01)      │
+   │  • vmbr0 Bridge (LAN Interface): 192.168.1.169  │
+   │  • vnet0 Switch (SDN Interface): 10.6.7.1       │
+   └────────────────────────┬────────────────────────┘
+                            │ (Internal Routing / SNAT)
+   ┌────────────────────────▼────────────────────────┐
+   │          10.6.7.0/24 (Proxmox SDN vnet0)        │
+   │                                                 │
+   │  • .170 → vm-docker01 (Compute Host Node)       │
+   │  • .171 → lxc-pihole01 (DNS Blocklist Server)   │
+   │  • .172 → lxc-tailscale01 (Mesh Subnet Router)  │
+   │  • .173 → vm-hermes01 (Dedicated AI Agent VM)   │
+   └─────────────────────────────────────────────────┘
 ```
 
 ---
@@ -463,7 +462,7 @@ afterhours_homeLab/
 
 ## 🛡️ Security Notes
 
-
+```text
 - SSH keypairs referenced by local path (`~/.ssh/id_ed25519`) — never checked into git
 - Terraform state files (`.tfstate`) contain resource IDs and are gitignored
 - All service passwords, API tokens, and JWT secrets live in `terraform.tfvars` (gitignored)
@@ -471,6 +470,9 @@ afterhours_homeLab/
 - Tailscale provides encrypted mesh VPN — no router port forwarding required
 - Cloudflared creates an authenticated tunnel to Cloudflare edge — no public exposure
 - USB datastore mount (`//192.168.1.169/Proxmox-USB`) authenticated via Samba credentials
+- This repository leverages a strict zero-secrets validation footprint. All sensitive parameters are strictly decoupled from the code tree into local-only variables handled safely by .gitignore policies.
+    - ggshield secret scan path -r .
+```
 
 ---
 
