@@ -1,0 +1,22 @@
+# Local Terraform state and plugin directories
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.txt
+
+# Secrets and environment variables
+*.tfvars
+*.tfvars.json
+.env
+*.env
+
+# OS/Editor specific
+.DS_Store
+.vscode/
+
+# Identity files
+*.pem
+*.key
+# Added by ggshield
+.cache_ggshield
