@@ -91,16 +91,26 @@ resource "docker_container" "langfuse_clickhouse" {
   name    = "langfuse-clickhouse"
   image   = "clickhouse/clickhouse-server:latest"
   restart = "unless-stopped"
+  
   env = [
     "CLICKHOUSE_USER=langfuse",
     "CLICKHOUSE_PASSWORD=${var.langfuse_db_password}",
     "CLICKHOUSE_DB=langfuse"
   ]
+
+  # --- HARD RESOURCE LIMITS ---
+  memory = 1024       # Hard limit: Max 1GB of RAM (value must be in MBs)
+  cpus   = "0.50"     # Hard limit: Only allowed to use half of 1 CPU core
+
   volumes {
     host_path      = "/home/afterhours/apps/langfuse/clickhouse"
     container_path = "/var/lib/clickhouse"
   }
-  networks_advanced { name = data.docker_network.backend.name }
+  
+  networks_advanced { 
+    name = data.docker_network.backend.name 
+  }
+  
   depends_on = [null_resource.langfuse_scaffolding]
 }
 
