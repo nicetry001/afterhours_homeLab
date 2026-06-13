@@ -132,3 +132,21 @@ variable "minio_s3_secret_key" {
   type        = string
   sensitive   = true
 }
+
+variable "playit_secret_key" {
+  description = "Secret key for Playit"
+  type        = string
+  sensitive   = true
+}
+
+variable "windrose_server_password" {
+  description = "Password for the Windrose server"
+  type        = string
+  sensitive   = true
+}
+
+variable "windrose_invite_code" {
+  description = "Optional invite code for the Windrose server"
+  type        = string
+  sensitive   = true
+}
