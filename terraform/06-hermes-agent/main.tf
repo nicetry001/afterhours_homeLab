@@ -6,6 +6,7 @@ resource "proxmox_download_file" "ubuntu_cloud_image" {
   url                 = "https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-amd64.img"
   file_name           = "ubuntu-26.04-cloudimg.iso"
   overwrite_unmanaged = true
+  overwrite = false
 }
 
 # 2. Define the Cloud-Init configuration text
@@ -73,7 +74,13 @@ resource "proxmox_virtual_environment_vm" "vm-hermes01" {
   }
 
   memory {
-    dedicated = 4096
+    dedicated = 8192
+  }
+
+  lifecycle {
+    ignore_changes = [
+      disk[0].file_id,initialization[0].user_data_file_id
+    ]
   }
 
   agent {
@@ -81,11 +88,11 @@ resource "proxmox_virtual_environment_vm" "vm-hermes01" {
   }
 
   disk {
-    datastore_id = "local-lvm" 
+    datastore_id = "local" 
     file_id      = proxmox_download_file.ubuntu_cloud_image.id
     interface    = "scsi0"
     size         = 50
-    file_format  = "raw"
+    file_format  = "qcow2"
   }
 
   # Card 1: Public Home Network

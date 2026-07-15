@@ -29,7 +29,7 @@ resource "docker_container" "offlineacademy" {
   ]
 
   ports {
-    internal = 6767
+    internal = 6969
     external = 6969
   }
 
