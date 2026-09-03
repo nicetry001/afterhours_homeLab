@@ -286,22 +286,22 @@ resource "docker_container" "jellyfin" {
   depends_on = [null_resource.arr_scaffolding]
 }
 
-resource "docker_container" "suggestarr" {
-  name    = "suggestarr"
-  image   = "ciuse99/suggestarr:latest"
-  restart = "unless-stopped"
+# resource "docker_container" "suggestarr" {
+#   name    = "suggestarr"
+#   image   = "ciuse99/suggestarr:latest"
+#   restart = "unless-stopped"
   
-  ports {
-    internal = 5000
-    external = 5000
-  }
+#   ports {
+#     internal = 5000
+#     external = 5000
+#   }
 
-  volumes {
-    host_path      = "/home/afterhours/apps/arr/config/suggestarr"
-    container_path = "/app/config/config_files"
-  }
+#   volumes {
+#     host_path      = "/home/afterhours/apps/arr/config/suggestarr"
+#     container_path = "/app/config/config_files"
+#   }
 
-  networks_advanced { name = data.docker_network.backend.name }
-  networks_advanced { name = data.docker_network.frontend.name }
-  depends_on         = [null_resource.arr_scaffolding]
-}
+#   networks_advanced { name = data.docker_network.backend.name }
+#   networks_advanced { name = data.docker_network.frontend.name }
+#   depends_on         = [null_resource.arr_scaffolding]
+# }
